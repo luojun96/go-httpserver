@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,7 +18,7 @@ func main() {
 	flag.Set("v", "4")
 	glog.V(2).Info("Starting http server ... ")
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {})
+	mux.HandleFunc("/", rootHandler)
 	fmt.Println("vim-go")
 	server := http.Server{
 		Addr:    ":80",
@@ -46,4 +47,19 @@ func main() {
 		glog.Fatalf("Server Shutdown Failed: %+v", err)
 	}
 	glog.V(2).Info("Server Exited Properly.")
+}
+
+func rootHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Enter root handler.")
+	user := r.URL.Query().Get("user")
+	if user != "" {
+		io.WriteString(w, fmt.Sprintf("hello [%s]\n", user))
+	} else {
+		io.WriteString(w, "hello [stranger]\n")
+	}
+
+	io.WriteString(w, "Headers:\n")
+	for k, v := range r.Header {
+		io.WriteString(w, fmt.Sprintf("%s=%s\n", k, v))
+	}
 }
