@@ -19,7 +19,7 @@ func main() {
 	glog.V(2).Info("Starting http server ... ")
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
-	fmt.Println("vim-go")
+	mux.HandleFunc("/healthz", healthz)
 	server := http.Server{
 		Addr:    ":80",
 		Handler: mux,
@@ -62,4 +62,8 @@ func rootHandler(w http.ResponseWriter, r *http.Request) {
 	for k, v := range r.Header {
 		io.WriteString(w, fmt.Sprintf("%s=%s\n", k, v))
 	}
+}
+
+func healthz(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, "ok\n")
 }
