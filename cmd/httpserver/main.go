@@ -12,14 +12,19 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/luojun96/go-httpserver/metric"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
 	flag.Set("v", "4")
 	glog.V(2).Info("Starting http server ... ")
+	metric.Register()
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", rootHandler)
 	mux.HandleFunc("/healthz", healthz)
+	mux.Handle("/metrics", promhttp.Handler())
 	server := http.Server{
 		Addr:    ":80",
 		Handler: mux,
@@ -51,6 +56,8 @@ func main() {
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Enter root handler.")
+	timer := metric.NewTimer()
+	defer timer.Observe()
 	user := r.URL.Query().Get("user")
 	if user != "" {
 		io.WriteString(w, fmt.Sprintf("hello [%s]\n", user))

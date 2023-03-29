@@ -36,3 +36,19 @@ type ExectionTime struct {
 	start time.Time
 	last  time.Time
 }
+
+func NewTimer() *ExectionTime {
+	return NewExecutionTime(functionLatency)
+}
+
+func NewExecutionTime(histo *prometheus.HistogramVec) *ExectionTime {
+	return &ExectionTime{
+		histo: histo,
+		start: time.Now(),
+		last:  time.Now(),
+	}
+}
+
+func (t *ExectionTime) Observe() {
+	t.histo.WithLabelValues("total").Observe(time.Since(t.start).Seconds())
+}
